@@ -1,0 +1,39 @@
+name: Deploy mdBook
+
+on:
+  push:
+    branches:
+      - gas-turbine-generator-control
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-gas-turbine-generator-control
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: '0.4.40'
+
+      - name: Build book
+        run: mdbook build
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./book
+          destination_dir: gas-turbine-generator-control
+          keep_files: true
+          enable_jekyll: false
