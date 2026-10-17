@@ -21,8 +21,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      pages_allowed: ${{ steps.policy.outputs.allowed }}
     steps:
       - name: Checkout main (site source)
         uses: actions/checkout@v4
@@ -45,25 +43,6 @@ jobs:
             --base-url "/${GITHUB_REPOSITORY#*/}/" \
             --out _site
 
-      # github-pages 环境带有部署分支白名单；不在名单里的分支照样构建，
-      # 只是跳过发布，避免出现红色失败记录。
-      - name: Check Pages deployment branch policy
-        id: policy
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/environments/github-pages/deployment-branch-policies"
-          allowed=$(curl -sS -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" "$api" \
-            | python3 -c "import sys,json;print(' '.join(p['name'] for p in json.load(sys.stdin).get('branch_policies',[])))")
-          echo "Pages 允许部署的分支: ${allowed:-<none>}"
-          if echo " ${allowed} " | grep -q " ${GITHUB_REF_NAME} "; then
-            echo "allowed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "allowed=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::分支 ${GITHUB_REF_NAME} 不在 Pages 部署白名单，本次只构建不发布（把 main 设为默认分支即可自动加入）"
-          fi
-
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -74,11 +53,7 @@ jobs:
 
   deploy:
     needs: build
-    if: needs.build.outputs.pages_allowed == 'true'
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
