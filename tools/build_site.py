@@ -220,7 +220,7 @@ def render(books: list[Book], repo: str, base_url: str) -> str:
 {body}
   </div>
   <footer>
-    <span>由 GitHub Actions 自动生成</span>
+    <span>由 GitHub Actions 构建并发布</span>
     <a href="https://github.com/{html.escape(repo)}">github.com/{html.escape(repo)}</a>
   </footer>
 </main>
