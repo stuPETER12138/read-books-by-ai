@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
 
 concurrency:
   group: pages-gas-turbine-generator-control
@@ -28,34 +27,6 @@ jobs:
 
       - name: Build book
         run: mdbook build
-
-      - name: Probe Pages settings
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
-          out="book/pages-probe.txt"
-          get_code=$(curl -s -o /tmp/pages.json -w '%{http_code}' \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" "$api")
-          {
-            echo "GET ${api} -> ${get_code}"
-            cat /tmp/pages.json || true
-            echo
-          } > "$out"
-          if [ "${get_code}" = "404" ]; then
-            post_code=$(curl -s -o /tmp/create.json -w '%{http_code}' -X POST "$api" \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              -d '{"build_type":"legacy","source":{"branch":"gh-pages","path":"/"}}')
-            {
-              echo "POST ${api} -> ${post_code}"
-              cat /tmp/create.json || true
-              echo
-            } >> "$out"
-          fi
-          cat "$out"
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
