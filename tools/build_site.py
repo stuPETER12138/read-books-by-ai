@@ -176,6 +176,7 @@ def render(books: list[Book], repo: str, base_url: str) -> str:
   main {{ max-width: 920px; margin: 0 auto; padding: 56px 20px 72px; }}
   header h1 {{ font-size: 1.9rem; margin: 0 0 8px; letter-spacing: .01em; }}
   header p {{ margin: 0; color: var(--muted); }}
+  header .tagline {{ margin-top: 6px; font-size: .9rem; }}
   .grid {{
     display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 16px; margin-top: 32px;
@@ -213,6 +214,7 @@ def render(books: list[Book], repo: str, base_url: str) -> str:
   <header>
     <h1>读书记录</h1>
     <p>共 {len(books)} 本书 · {footer_note}</p>
+    <p class="tagline">一本书一个分支：正文在各书籍分支，首页与构建由 main 统一生成。</p>
   </header>
   <div class="grid">
 {body}
