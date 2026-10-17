@@ -14,7 +14,7 @@ permissions:
 jobs:
   site:
     # 复用 main 分支上的整站构建与发布流程：
-    # 首页与构建脚本来自 main，书籍内容来自各 bra 分支。
+    # 首页与构建脚本来自 main，书籍内容来自各书籍分支。
     uses: stuPETER12138/read-books-by-ai/.github/workflows/site.yml@main
     permissions:
       contents: read

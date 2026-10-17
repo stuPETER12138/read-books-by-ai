@@ -24,18 +24,19 @@ mdbook serve --open   # 或 mdbook build
 
 ## 发布方式
 
-整站由 `main` 分支的 `Build and deploy site` 工作流统一构建：
+整站由 `main` 分支的 `Build and deploy site` 工作流统一构建（`workflow_call`，可被任意书籍分支复用）：
 
 1. 检出 `main`，拉取所有 `origin/*` 分支；
 2. `tools/build_site.py` 对每个含 `book.toml` 的分支执行 `mdbook build`，输出到 `_site/<分支名>/`；
 3. 生成 `_site/index.html` 汇总首页；
 4. 通过 `upload-pages-artifact` + `deploy-pages` 发布到 GitHub Pages。
 
-本分支（`gas-turbine-generator-control`）只负责内容；推送后 `notify-site.yml` 发出
-`repository_dispatch`（`book-updated`），触发 `main` 重新构建整站。
+本分支（`gas-turbine-generator-control`）只负责内容：推送后 `notify-site.yml` 复用
+`main` 的那套工作流整站重建。
 
-> 新增书籍时，`[output.html] site-url` 要写成 `/read-books-by-ai/<分支名>/`，
-> 并用 `git switch -c <分支名> main` 从 `main` 创建分支，才能自动带上通知工作流。
+> Pages 的 `github-pages` 环境有部署分支白名单。工作流会先查询白名单：
+> 当前 ref 在名单内才发布，否则只构建（绿色通过，带一条 warning），因此不会出现红色失败记录。
+
 
 ## 内容说明
 
