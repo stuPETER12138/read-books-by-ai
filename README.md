@@ -33,8 +33,9 @@ main
 3. 生成 `_site/index.html` 汇总首页；
 4. `upload-pages-artifact` + `deploy-pages` 发布到 GitHub Pages。
 
-部署任务没有绑定 `github-pages` 环境：该环境的部署分支白名单只允许旧默认分支，
-会把 `main` 挡在发布之外；解绑后任何触发该工作流的 ref 都能发布。
+部署任务绑定在 `github-pages` 环境上；该环境的 *Deployment branches and tags* 现为
+**No restriction**，因此 `main` 与各书籍分支都能发布。若把限制改回“仅选定分支”，
+记得把 `main` 和对应书籍分支加进规则，否则发布会被拦。
 
 ## 新增一本书
 
@@ -50,4 +51,5 @@ git push -u origin my-new-book
 - **Settings → Pages → Build and deployment → Source**：**GitHub Actions**（已设置，不再使用 `gh-pages`）。
 - **Settings → General → Default branch**：`main`（已设置）。定时任务、`workflow_dispatch` 都从默认分支运行。
 - 如果以后想把部署重新绑定到 `github-pages` 环境做审批/分支保护，记得同时把 `main`
-  加入该环境的 *Deployment branches*，否则发布会被拦截。
+  加入该环境的 *Deployment branches*，否则发布会被拦截。当前设置为 **No restriction**，
+  部署任务也重新绑定了该环境，`main` 的推送可以直接发布。
