@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: pages-gas-turbine-generator-control
@@ -37,3 +38,22 @@ jobs:
           destination_dir: gas-turbine-generator-control
           keep_files: true
           enable_jekyll: false
+
+      - name: Enable GitHub Pages (gh-pages branch, site root)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
+          code=$(curl -s -o /tmp/pages.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" "$api")
+          echo "GET ${api} -> ${code}"
+          if [ "${code}" = "404" ]; then
+            code=$(curl -s -o /tmp/create.json -w '%{http_code}' -X POST "$api" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -d '{"build_type":"legacy","source":{"branch":"gh-pages","path":"/"}}')
+            echo "POST ${api} -> ${code}"
+            cat /tmp/create.json || true
+          fi
