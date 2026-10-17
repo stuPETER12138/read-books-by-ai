@@ -28,10 +28,10 @@ mdbook serve --open   # 或 mdbook build
 2. 执行 `mdbook build`；
 3. 将 `book/` 发布到 `gh-pages` 分支的 `gas-turbine-generator-control/` 目录，并保留其他书籍目录。
 
-> **首次启用（只需一次）**：仓库 Settings → Pages → Build and deployment → Source 选
-> “Deploy from a branch”，Branch 选 `gh-pages`，目录选 `/ (root)`，保存。
-> `GITHUB_TOKEN` 没有创建 Pages 站点的权限（返回 `Resource not accessible by integration`），
-> 因此这一步必须在网页上手动完成；之后每次推送都会自动发布，无需再操作。
+> **Pages 设置**：本仓库的 Pages 已启用，源为 `gh-pages` 分支的 `/ (root)`。
+> 若以后被关闭，可在 Settings → Pages → Build and deployment → Source 中重新选择
+> “Deploy from a branch” + `gh-pages` + `/ (root)`。`GITHUB_TOKEN` 没有创建 Pages 站点的权限
+> （返回 `Resource not accessible by integration`），所以这一步只能手动完成一次。
 >
 > 每本书使用「仓库内一个分支 + gh-pages 下一个子目录」的方式共存，
 > 本分支只写入 `gas-turbine-generator-control/`，不会覆盖其他书籍。
