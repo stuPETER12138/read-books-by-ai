@@ -1,23 +1,22 @@
-name: Notify site rebuild
+name: Rebuild site
 
 on:
   push:
+    branches:
+      - gas-turbine-generator-control
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  dispatch:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger site rebuild on main
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl -sS -X POST \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/dispatches" \
-            -d "{\"event_type\":\"book-updated\",\"client_payload\":{\"branch\":\"${GITHUB_REF_NAME}\"}}" \
-            -w '\nHTTP %{http_code}\n'
+  site:
+    # 复用 main 分支上的整站构建与发布流程：
+    # 首页与构建脚本来自 main，书籍内容来自各 bra 分支。
+    uses: stuPETER12138/read-books-by-ai/.github/workflows/site.yml@main
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
