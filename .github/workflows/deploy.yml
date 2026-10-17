@@ -29,6 +29,34 @@ jobs:
       - name: Build book
         run: mdbook build
 
+      - name: Probe Pages settings
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
+          out="book/pages-probe.txt"
+          get_code=$(curl -s -o /tmp/pages.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" "$api")
+          {
+            echo "GET ${api} -> ${get_code}"
+            cat /tmp/pages.json || true
+            echo
+          } > "$out"
+          if [ "${get_code}" = "404" ]; then
+            post_code=$(curl -s -o /tmp/create.json -w '%{http_code}' -X POST "$api" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -d '{"build_type":"legacy","source":{"branch":"gh-pages","path":"/"}}')
+            {
+              echo "POST ${api} -> ${post_code}"
+              cat /tmp/create.json || true
+              echo
+            } >> "$out"
+          fi
+          cat "$out"
+
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -38,30 +66,3 @@ jobs:
           destination_dir: gas-turbine-generator-control
           keep_files: true
           enable_jekyll: false
-
-      - name: Enable GitHub Pages (gh-pages branch, site root)
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
-          code=$(curl -s -o /tmp/pages.json -w '%{http_code}' \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" "$api")
-          echo "GET ${api} -> ${code}"
-          echo "### Pages API probe" >> "$GITHUB_STEP_SUMMARY"
-          echo "- GET pages: ${code}" >> "$GITHUB_STEP_SUMMARY"
-          echo '```json' >> "$GITHUB_STEP_SUMMARY"
-          cat /tmp/pages.json >> "$GITHUB_STEP_SUMMARY" || true
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          if [ "${code}" = "404" ]; then
-            code=$(curl -s -o /tmp/create.json -w '%{http_code}' -X POST "$api" \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              -d '{"build_type":"legacy","source":{"branch":"gh-pages","path":"/"}}')
-            echo "POST ${api} -> ${code}"
-            echo "- POST pages: ${code}" >> "$GITHUB_STEP_SUMMARY"
-            echo '```json' >> "$GITHUB_STEP_SUMMARY"
-            cat /tmp/create.json >> "$GITHUB_STEP_SUMMARY" || true
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-          fi
