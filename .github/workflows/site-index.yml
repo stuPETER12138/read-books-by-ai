@@ -1,0 +1,61 @@
+name: Build site index
+
+on:
+  workflow_run:
+    workflows: ["Deploy mdBook"]
+    types: [completed]
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-site-index
+  cancel-in-progress: false
+
+jobs:
+  index:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout default branch (generator)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout gh-pages (published site)
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+          fetch-depth: 0
+
+      - name: Generate index.html
+        run: |
+          python3 tools/build_index.py \
+            --repo "${GITHUB_REPOSITORY}" \
+            --base-url "/${GITHUB_REPOSITORY#*/}/" \
+            --out site/index.html
+
+      - name: Commit and push
+        working-directory: site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "index.html 无变化，跳过提交"
+            exit 0
+          fi
+          git commit -m "site: 更新书籍汇总首页"
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin gh-pages && git push origin HEAD:gh-pages; then
+              echo "pushed on attempt ${attempt}"
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          echo "推送失败：连续三次重试仍冲突" >&2
+          exit 1
