@@ -2,8 +2,6 @@ name: Rebuild site
 
 on:
   push:
-    branches:
-      - gas-turbine-generator-control
   workflow_dispatch:
 
 permissions:
@@ -15,6 +13,7 @@ jobs:
   site:
     # 复用 main 分支上的整站构建与发布流程：
     # 首页与构建脚本来自 main，书籍内容来自各书籍分支。
+    # 新书分支直接拷贝本文件即可，不需要改分支名。
     uses: stuPETER12138/read-books-by-ai/.github/workflows/site.yml@main
     permissions:
       contents: read

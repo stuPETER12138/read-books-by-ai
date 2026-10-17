@@ -34,8 +34,7 @@ mdbook serve --open   # 或 mdbook build
 本分支（`gas-turbine-generator-control`）只负责内容：推送后 `notify-site.yml` 复用
 `main` 的那套工作流整站重建。
 
-> Pages 的 `github-pages` 环境有部署分支白名单。工作流会先查询白名单：
-> 当前 ref 在名单内才发布，否则只构建（绿色通过，带一条 warning），因此不会出现红色失败记录。
+> 部署任务没有绑定 `github-pages` 环境，因此书籍分支的推送也能直接发布，不会被环境的分支白名单拦截。
 
 
 ## 内容说明
